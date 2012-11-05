@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js" type="text/javascript"></script>
+     <script type="text/javascript">
+         
+	 xmlFile = "Export.xml";
+     $(function() {
+             $.ajax({
+                 type: "GET",
+                 url: xmlFile, 
+                 dataType: "xml",
+                 success: function(xml) {
+                        $('.load').hide('fast');
+                        /*
+            currEvent = $("#events").val();
+			currVersion = $("#patcharea").val();                        
+			currPage = $("#pages").val();
+			currBlock = $("#blocks").val();
+			*/
+					shebang();
+// the entire shebang
+					function shebang(){                 
+					eventD();
+					versionD();
+					pageD();
+					blockD();
+					buildDetails();
+					}
+					
+// builds the event dropdown
+					function eventD(){
+                        u = $(xml).find("Event");
+                        u.each(function(){
+	                        eventid = $(this).attr("EventID");
+	                        eventname = $(this).attr("EventName");
+	                        b = $('<option value="' + eventid + '">' + eventname + '</option>');
+	                        $("#events").append(b);
+                        });
+                        $("select[id='events'] option:eq(1)").attr('selected','selected');
+                       // return u;
+                        }
+// builds the patcharea dropdown
+					function versionD(){
+                        x = u.find("Version");
+                        x.each(function(){
+	                     	patcharea = $(this).attr("PatchArea");
+	                        p = $('<option value="'  + patcharea + '">' + patcharea + '</option>');
+	                        $("#patcharea").append(p);
+	                     });
+                        $("select[id='patcharea'] option:eq(0)").attr('selected','selected');
+                        }
+// builds the page dropdown
+				    function pageD(){
+					currVersion = $("#patcharea").val();
+				//	alert(currVersion);
+					
+						n = u.find("Version[PatchArea='" + currVersion + "']").children('Page');						
+						n.each(function(){
+							page =$(this).attr("Page");
+							s = $('<option value="' + page + '">' + currVersion + "-" + page + '</option>');
+							$("#pages").append(s);
+						});
+                       $("select[id='pages'] option:eq(0)").attr('selected','selected');
+                       
+                       }
+//build the block dropdown
+					function blockD(){
+                      var  currVersion = $("#patcharea").val();
+					var	currPage = $("#pages").val();
+				
+						y = u.find("Version[PatchArea='" + currVersion + "']").children("Page[Page='" + currPage + "']").children("Block");
+						y.each(function(){
+							block = $(this).attr("Block");
+    	      	            ss = $('<option value="' + block + '">' + currVersion + block + '</option>');
+                      		$("#blocks").append(ss);
+						})
+                       $("select[id='blocks'] option:eq(0)").attr('selected','selected');
+                       }
+//build out the details based on the initial dropdown choices
+                       function buildDetails(){
+                          event = $("#events").val();
+                          patch = $("#patcharea").val();
+                      	  page = $("#pages").val();
+                      	  block = $("#blocks").val();
+                          
+
+                         z = u.find("Version[PatchArea='" + patch + "']").children("Page[Page='" + page + "']").children("Block[Block='" + block + "']").children("Item");
+                      	  //alert("ptch=" + currPatch + " pg=" + currPage + " blck=" + currBlock);
+                      	  
+                      	  z.each(function(){
+                      	      var copy = $(this).attr("Copy");
+                      	      var itemNum = $(this).attr("ItemNum");
+                      	      var wasPrice = $(this).attr("WasPrice");
+                      	      var nowPrice = $(this).attr("NowPrice");
+                      	      var thumbUrl = $(this).attr("ImageUrl72");
+                      	      var imageUrl = $(this).attr("ImageUrl500");
+                      	      var uom = $(this).attr("UOM");
+                      	      if (typeof uom=="undefined"){uom = "";} else { uom = "/" + uom; }
+                      	      var m = $("<div class='item'><img id='" + imageUrl + "' class='thumb3' src='" + thumbUrl + "' />Item #: " + itemNum + "<br />Details: " + copy + "<br />Was: " + wasPrice + uom + "<br />Now: " + nowPrice + uom + "<br /></div>");
+                      	      $("#details").append(m);
+                      	      
+                      	  });
+                      	 // clk;
+                      	  }
+                      	  
+                      	  $("#events").change(function(){
+ 					   $("#patcharea").empty();
+					   $("#pages").empty();
+					   $("#blocks").empty();
+					   $("#details").empty();
+//						eventD();
+						versionD();
+						pageD();
+						blockD();
+						buildDetails();
+					   
+            //          	  	shebang();
+                       	  });
+                       	  
+                      	  $("#patcharea").change(function(){
+					   $("#pages").empty();
+					   $("#blocks").empty();
+					   $("#details").empty();
+ 						pageD();
+						blockD();
+						buildDetails();
+                      	  });
+
+                      	  $("#pages").change(function(){
+					   $("#blocks").empty();
+					   $("#details").empty();
+						blockD();
+						buildDetails();
+                       	  });
+                       	   
+                       	$("#blocks").change(function(){
+                       	$("#details").empty();
+ 						buildDetails();
+                       	  });
+                 
+                      $(".thumb3").live('click',function(){
+                     // 	  if ($(event.target).is(".thumb3")){
+                      	  	uuu = $(this).attr("id");
+                      	//  	  alert(uuu);
+                      	  	  	
+                      	      $("#large").empty();
+                      	      ttt = $("<img class='large' src='" + uuu + "' />");
+                      	      $("#large").append(ttt);
+                      	      
+                  //    	      }
+                      	      });
+
+
+                  }
+             });
+     });
+     
+     
+
+     </script>
+     
+     <style type="text/css">
+     
+     html{
+     	margin:0;
+     	padding:0;
+     }
+     
+     	body{
+     	font-family:verdana, sans-serif;
+     	font-size:.9em;
+     	}
+     
+     	#left{
+     	width:330px;
+       	}
+     	
+     	li label{
+     	display: inline-block;
+     	 width:120px;
+     	}
+     	
+     	li{
+     	list-style: none;
+     	}
+     	
+     	ul{
+     	width:330px;
+     	}
+     	
+     	#details{
+
+
+     	 width:440px;
+    border: 1px solid #ccc;
+  	border-top-color: #eee;
+  	border-right-color: #ddd;
+  	border-bottom-color: #bbb;
+  	padding:10px;
+  	margin-left:2px;
+  	margin-top:10px;
+     	 }
+     	 
+     	 #container{
+     	   width:530px;
+     	    float:left;
+     	   }
+     	   
+     	   
+     	  
+     	   fieldset{
+    border: 1px solid #ccc;
+  	border-top-color: #eee;
+  	border-right-color: #ddd;
+  	border-bottom-color: #bbb;
+  	width:440px;
+     	   }
+     	   
+     .thumb3
+		{
+	display: inline;
+	float:left;
+  	clear:both;
+	padding: 2px 2px 2px 2px;
+  	border: 1px solid #ccc;
+  	border-top-color: #eee;
+  	border-right-color: #ddd;
+  	border-bottom-color: #bbb;
+  	background-color: #fff;
+  	text-align: center;
+  	margin-right:4px;
+  	margin-bottom: 15px;
+	}
+	
+	.item{
+	margin-top:5px;
+	margin-bottom:20px;
+	padding: 4px;
+	overflow:auto;
+	}
+ .logo{
+ 	position:relative;
+ 	margin-bottom:7px;
+ 	left:14px;
+  }
+  
+  #large{
+  	margin-top:100px;
+   }
+   
+   .large{
+     	border: 1px solid #ccc;
+  	border-top-color: #eee;
+  	border-right-color: #ddd;
+  	border-bottom-color: #bbb;
+	padding: 5px 5px 5px 5px;
+
+   }
+   
+  #main{
+      width:1100px;	
+  	border:1px solid white;
+  }
+     </style>
+   </head>
+<body>
+<ul id="news">
+<li class="load">Please Wait. Loading...</li>
+</ul>
+<div id="main">
+<div id="container">
+<div class="logo"><img src="lowes_logo.gif" /></div>
+<div id="left">
+<fieldset>
+
+<form method="#" action="GET" name="form1">
+<ul>
+<li>
+<label>Events</label>
+<select id="events">
+</select>
+</li>
+
+<li>
+<label>Patch Area</label>
+<select id="patcharea">
+</select>
+</li>
+<li>
+
+<label>Pages</label>
+<select id="pages">
+</select>
+</li>
+<li>
+<label>Blocks</label>
+<select id="blocks">
+</select>
+</li>
+</ul>
+
+</form>
+</fieldset>
+</div>
+
+<div id="details"></div>
+</div>
+<div id="large"><img class="large" src="fff.gif" width="500" /></div>
+</div>
+</body>
+</html>

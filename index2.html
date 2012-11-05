@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lowes XML Search</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.js"></script> 
+		<script type="text/javascript">
+	$(document).ready(function() {
+		var myArr = [];
+	$.ajaxSetup ({
+		cache: true
+	});
+
+		$.ajax({
+			type: "GET",
+			url: "LowesSignageV2.xml", // change to full path of file on server
+			dataType: "xml",
+			success: parseXml,
+			complete: setupAC,
+			failure: function(data) {
+				alert("XML File could not be found");
+				}
+		});
+
+		function parseXml(xml)
+		{
+			//find every query value
+			$(xml).find("Item").each(function()
+			{
+				myArr.push($(this).attr("Copy"));
+			});
+		}
+
+		function setupAC() {
+                        $('.load').hide('fast');
+			$("input#searchBox").autocomplete({
+					source: myArr,
+					minLength: 4,
+					select: function(event, ui) {
+                                                $("#crumb").empty();
+                                               // ttt = $("Item").attr("ItemNum").val();
+                                                specs = "this is some text";
+                                                $("#crumb").append(specs);
+                                               // $("#details").append(ttt);
+						$("input#searchBox").val(ui.item.value);
+						$("#searchForm").click(function()
+                                                {
+                                          //          specs = "this is some text";
+                                          //          $("#crumb").append(specs);
+                                                });
+					}
+			});
+		}
+
+                function buildDetails2(){
+
+                
+                }
+	});
+                </script>
+
+     <style type="text/css">
+/* css styles */
+html{margin:0;padding:0;}
+body{font-family:verdana, sans-serif;font-size:.9em;}     
+#left{width:330px;}
+li label{display: inline-block;width:120px;}     	
+li{list-style: none;}
+ul{width:330px;}     	
+#details{width:450px;border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;padding:7px;margin-left:2px;margin-top:10px;}     	 
+#container{width:530px;float:left;}
+fieldset{border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;width:440px;}
+.thumb3{display: inline;float:left;clear:both;padding: 2px 2px 2px 2px;border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;background-color: #fff;text-align: center;margin-right:1px;margin-bottom: 20px;}
+.thumb3:hover{cursor: pointer;cursor:hand;}
+.item{margin-top:5px;margin-bottom:20px;padding:4px;overflow:auto;}
+.logo{position:relative;margin-bottom:7px;left:14px;}  
+#largeD{margin-top:100px;}
+.large{border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;padding: 5px 5px 5px 5px;}
+#main{width:1100px;	border:1px solid white;}
+#crumb{margin-left:12px;margin-top:4px;margin-bottom:4px;}
+#specific{width:500px;text-align:left;margin-top:3px;border:1px solid red;}
+.spec{font-weight:bold;}
+.txt{width:340px;margin-left:90px}
+/* end of css style */
+     </style>
+        
+    </head>
+    <body>
+	<ul id="news">
+		<li class="load">Please Wait. Loading...</li>
+	</ul>
+	<div id="main">
+		<div id="container">
+			<div class="logo"><img src="lowes_logo.gif" /></div>
+			<div id="left">
+<form name="search_form" id="searchForm" method="GET" action="#">
+	<label for="searchBox">Product Search</label>
+	<input type="text" id="searchBox" name="searchString" />
+
+	<button name="searchKeyword" id="searchKeyword">products results</button>
+</form>
+
+                        </div>
+			<div id="crumb"></div>
+			<div id="details"></div>
+		</div>
+		<div id="largeD"><div id="large"><img class="large" src="fff.gif" width="500" /></div></div>
+	</div>
+    </body>
+</html>

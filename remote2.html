@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>Lowes XML Product Search Demo</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="./remote_files/jquery.ui.all.css">
+        <script src="./remote_files/jquery-1.6.2.js"></script>
+        <script src="./remote_files/jquery.ui.core.js"></script>
+        <script src="./remote_files/jquery.ui.widget.js"></script>
+        <script src="./remote_files/jquery.ui.position.js"></script>
+        <script src="./remote_files/jquery.ui.autocomplete.js"></script>
+        <link rel="stylesheet" href="./remote_files/demos.css">
+	    <script type="text/javascript" src="./remote_files/lightbox/js/jquery.lightbox-0.5.js"></script>
+	    <link rel="stylesheet" type="text/css" href="./remote_files/lightbox/css/jquery.lightbox-0.5.css" media="screen" />
+        
+        <style>
+        .ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
+        </style>
+        <script>
+        $(function() {
+                function log( message ) {
+                        $( "<div/>" ).text( message ).prependTo( "#log" );
+                        $( "#log" ).scrollTop( 0 );
+                }
+                
+// this will build the page details
+// for 2 states (1) initial page state and (2) page drop onChange
+                        function buildL(ui,xmlResponse, flag){
+                                br = "<br />";
+                            	$("#large").empty();
+                        		$("#notes").empty();
+                        		lb = eval($("#large").lightBox());
+                        		currPage = $("#pages").val();
+                    	if(flag==1){
+                            currItem = ui.item.value;
+                                                bigimg=ui.item.origin.children("Version[PatchArea='" + currPage + "']").attr("DocumentImageName");
+                                                page=ui.item.origin.children("Version[PatchArea='" + currPage + "']").attr("Page");
+                                                itemnum=ui.item.origin.attr("ItemNum");
+                                                uom=ui.item.origin.attr("UOM");
+                                                thumb=ui.item.origin.attr("ImageUrl72");
+                                                large=ui.item.origin.attr("ImageUrl500");
+                                                block=ui.item.origin.children("Version[PatchArea='" + currPage + "']").attr("Block");
+                                                wasPrice=ui.item.origin.children("Version[PatchArea='" + currPage + "']").attr("WasPrice");
+                                                nowPrice=ui.item.origin.children("Version[PatchArea='" + currPage + "']").attr("NowPrice");
+                    	} else {
+                            currItem = $("#birds").val();
+                                                bigimg=$(xmlResponse).find("Item[Copy='" + currItem + "']").children("Version[PatchArea='" + currPage + "']").attr("DocumentImageName");
+                                                page=$(xmlResponse).find("Item[Copy='" + currItem + "']").children("Version[PatchArea='" + currPage + "']").attr("Page");
+                                                itemnum=$(xmlResponse).find("Item[Copy='" + currItem + "']").attr("ItemNum");            
+                                                block=$(xmlResponse).find("Item[Copy='" + currItem + "']").children("Version[PatchArea='" + currPage + "']").attr("Block");            
+                                                uom=$(xmlResponse).find("Item[Copy='" + currItem + "']").attr("UOM");            
+                                                thumb=$(xmlResponse).find("Item[Copy='" + currItem + "']").attr("ImageUrl72");            
+                                                large=$(xmlResponse).find("Item[Copy='" + currItem + "']").attr("ImageUrl500");      
+                                                wasPrice=$(xmlResponse).find("Item[Copy='" + currItem + "']").children("Version[PatchArea='" + currPage + "']").attr("WasPrice");            
+                                                nowPrice=$(xmlResponse).find("Item[Copy='" + currItem + "']").children("Version[PatchArea='" + currPage + "']").attr("NowPrice");            
+	                    }
+	                    if (typeof uom=="undefined"){uom = "";} else { uom = "/" + uom; }
+	                                        if (typeof wasPrice=="undefined") {wasPrice = "";} else { wasPrice = "Was: " + wasPrice + uom + br; }
+	                    if (typeof nowPrice=="undefined") {nowPrice = "";} else { nowPrice = "Now: " + nowPrice + uom + br; }
+	                                        if (thumb==""){thumbUrl = "";} else { thumbUrl = "<img id='" + large + "' item='" + itemnum + "' copy='" + currItem + "' class='thumb3' src='" + thumb + "' />";}
+	                    
+	                        var cr = "Item: " + currItem + br + "Item #: " + itemnum + br + "PatchArea: " + currPage + br + "Page: " + page + br + "Block: " + block + br + wasPrice + nowPrice;
+	                        var m = $("<div class='item'>" + thumbUrl +"<div class='txt'>" + cr + "</div></div>");
+	                        ttt = $('<a href="images/pages/' + bigimg + '"><img class="large" src="images/pages/' + bigimg + '" /></a>');
+	                                        $("#large").hide().append(ttt).fadeIn();
+	                                        $("#notes").append(m);          
+	                        }
+                        
+// this build the page option drop down           
+                function pageD( t, xmlResponse ){
+                 $("#pages").empty();
+                  t.each(function(){
+                            //    page =$(this).attr("Page");
+                                s = $('<option value="' + $(this).attr("PatchArea") + '">Page-' + $(this).attr("PatchArea") + '</option>');
+                                $("#pages").append(s);
+                                });
+                  }
+// the ajax action - reading allowing the read of the xml document in question
+                $.ajax({
+                        url: "ExportProduct.xml",
+                        dataType: "xml",
+                        success: function( xmlResponse ) {
+                                                $('.load').hide('fast');
+                                                $('#notes').removeClass('notes');
+                                                $('.mainimg').removeClass('mainimg');
+//doing some initial xml node mappings for later use
+                                 data = $( "Item", xmlResponse ).map(function() {
+                                        return {
+                                                value: $( this ).attr("Copy"),
+                                                id: $( this ).attr("ItemNum"),
+                        cid: $( this ).attr("ImageUrl72"),
+                        wid: $(this).children("Version"),
+                        origin: $(this),
+                                        };
+                                }).get();
+                                $( "#birds" ).autocomplete({
+                                        source: data,
+                                        minLength: 2,
+                                        select: function( event, ui ) {
+                                                log( ui.item ?
+                                                        "Selected: " + ui.item.value + ", geonameId: " + ui.item.id :
+                                                        "Nothing selected, input was " + this.value );
+                        pageD( ui.item.wid, xmlResponse );
+                                        $('#notes').addClass('notes');
+                                                buildL(ui, xmlResponse, 1);     
+                                        }
+                                })
+                                $("#pages").change(function(event, ui){
+                                $('#notes').addClass('notes');
+                                        buildL(ui, xmlResponse, 2);     
+                })
+                
+                /*
+                        $(".thumb3").live('click',function(){
+                        $("#mainimg").empty();
+                                        uuu = $(this).attr("id");
+                                        ttt = $("<img class='large2' src='" + uuu + "' />");
+                                        $("#mainimg").hide().append(ttt).fadeIn();
+                                        //$('#mainimg').addClass('mainimg');
+
+
+                })
+                                */
+                                
+                        }
+                });
+        });
+        </script>
+        <script>
+        
+            $(function() {
+        	//	$('.large a').lightBox();
+        		//$('a').lightBox();
+    		});
+	
+        </script>
+        
+<style type="text/css">
+#container{width:530px;float:left;}
+#main{width:940px;border:1px solid white;}
+.logo{position:relative;margin-bottom:7px;left:14px;}  
+.notes{width:493px;border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;padding:7px;margin-left:2px;margin-top:0;}     
+li{list-style:none}
+.mainimg{width:200px;} 
+input#birds {width:330px;}
+.txt a, #notes{font-size:150%;}
+li label{font-size:120%;width:120px;display:inline-block;text-align:right;}
+.txt2{width:340px;margin-left:10px; margin-top:5px; font-size:130%;}
+.txt{width:390px;margin-left:90px; font-size:90%;}
+.thumb3{display: inline;float:left;clear:both;padding: 2px 2px 2px 2px;border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;background-color: #fff;text-align: center;margin-right:1px;margin-bottom: 20px;}
+.thumb3:hover{cursor: pointer;cursor:hand;margin:auto;}
+#large{width:405px;float:right;}
+.large{border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;padding: 5px 5px 5px 5px; width:400px;}
+.large2{width:200px;border: 1px solid #ccc;border-top-color: #eee;border-right-color: #ddd;border-bottom-color: #bbb;padding: 5px 5px 5px 5px;margin-left:2px;margin-top:20px; margin-right:0;}
+</style>
+</head>
+<body>
+        <ul id="news">
+                <li class="load">Please Wait. Loading...</li>
+        </ul>
+        <div id="main">
+                <div id="container">
+                        <div class="logo"><img src="lowes_logo.gif" /></div>
+                        <div class="txt2">&raquo; <a href="index.html">Back to Specific Product Selection</a></div>
+                        <div class="demo">
+                        <form action="" method="GET" id="searchform">
+                                <div class="ui-widget">
+                                	<ul>
+                                        <li><label for="birds">Product Search: </label> <input id="birds" class="ui-autocomplete-input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true"></li>
+                                		<li><label>Patch Area: </label>
+                                            <select id="pages"></select>
+                                        </li>
+                                	</ul>
+                                </div>
+   						</form>                             
+                        </div><!-- End demo -->
+                        <div id="notes" class="notes"></div>
+                        <div id="mainimg" class="mainimg2"></div>
+                                <ul class="ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all" role="listbox" aria-activedescendant="ui-active-menuitem" style="z-index: 1; top: 0px; left: 0px; display: none; "></ul>
+                </div><!--end container -->                     
+                <div id="largeD"><div id="large"></div></div>                                   
+        </div><!-- end main -->
+</body>
+</html>

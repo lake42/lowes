@@ -1,0 +1,2 @@
+<xsl:value-of select="Event[@EventName]" />
+<xsl:attribute name="value"><xsl:value-of select="Event[@EventId]" /></xsl:attribute>
